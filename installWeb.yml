@@ -4,10 +4,10 @@
   vars:
     blog_path: /var/www/wordpress
     telegraf_url: https://dl.influxdata.com/telegraf/releases/telegraf-1.8.3-1.x86_64.rpm
-    metric_store_ip: 172.31.30.52
+    metric_store_ip: 172.31.31.118
     database: adsk_wordpress
     database_user: wp_user
-    database_host: 172.31.30.52
+    database_host: 172.31.31.118
     database_password: wp123
     node_name: web
   tasks:
@@ -59,10 +59,12 @@
       yum:
         name: "{{telegraf_url}}"
         state: present
+        
     - name: "Copy cfg into dest"
       template:
         src: templates/telegraf.conf
         dest: /etc/telegraf/telegraf.conf
+        
     - name: "Start telegraf"
       service:
         name: "telegraf"
@@ -76,8 +78,10 @@
     database_user: wp_user
     database_password: wp123
     telegraf_url: https://dl.influxdata.com/telegraf/releases/telegraf-1.8.3-1.x86_64.rpm
-    metric_store_ip: 172.31.30.52
+    metric_store_ip: 172.31.31.118
     node_name: db
+    influxdb_database_name: metrics
+    influxdb_ip_address: 172.31.31.118
   tasks:
     - name: "Install and start db server"
       yum:
@@ -85,8 +89,9 @@
       with_items:
         - mariadb
         - mariadb-server
-          
-    - service:
+        
+    - name: "Start service mariadb, if not started"    
+      service:
         name: mariadb
         state: started 
           
@@ -142,6 +147,7 @@
       yum:
         name: "{{grafana_url}}"
         state: present
+        
     - name: "Start grafana"
       service:
         name: "grafana-server"
